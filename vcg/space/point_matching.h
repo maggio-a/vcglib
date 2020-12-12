@@ -31,6 +31,8 @@
 #include <Eigen/Eigenvalues>
 #include  <iostream>
 
+#include <numeric>
+
 namespace vcg
 {
 
@@ -238,6 +240,49 @@ void ComputeSimilarityMatchMatrix(std::vector<Point3<S> > &Pfix,
 
   Matrix44<S> scaleM; scaleM.SetDiagonal(1.0/scalingFactor);
   res = res * scaleM;
+}
+
+/*! \brief Computes the best fitting affine transformation to align two sets of corresponding points
+ * The linear part of the transformation is obtained by solving a linear least squares system
+ * The affine part of the transformation aligns the barycenters of the point sets
+ */
+template <class S>
+void ComputeAffineMatchMatrix(std::vector<Point3<S> > &Pfix,
+                                  std::vector<Point3<S> > &Pmov,
+                                  Matrix44<S> &res)
+{
+    if (Pfix.size() != Pmov.size() || Pfix.size() < 3) {
+        res.SetIdentity();
+        return;
+    }
+
+    Eigen::Vector3d pbary, qbary;
+    (std::accumulate(Pmov.begin(), Pmov.end(), Point3<S>::Zero()) / (double) Pmov.size()).ToEigenVector(pbary);
+    (std::accumulate(Pfix.begin(), Pfix.end(), Point3<S>::Zero()) / (double) Pfix.size()).ToEigenVector(qbary);
+
+    Eigen::MatrixXd P(Pmov.size(), 3);
+    Eigen::MatrixXd Q(Pfix.size(), 3);
+
+    for (int i = 0; i < P.rows(); ++i) {
+        Eigen::Vector3d pi, qi;
+        Pmov[i].ToEigenVector(pi);
+        Pfix[i].ToEigenVector(qi);
+        P.row(i) = pi - pbary;
+        Q.row(i) = qi - qbary;
+    }
+
+    Eigen::Matrix3d M;
+    Eigen::FullPivHouseholderQR<Eigen::MatrixXd> qr(P);
+    M.row(0) = qr.solve(Q.col(0));
+    M.row(1) = qr.solve(Q.col(1));
+    M.row(2) = qr.solve(Q.col(2));
+
+    Eigen::Matrix4d T;
+    T.setIdentity();
+    T.block(0, 0, 3, 3) = M;
+    T.block(0, 3, 3, 1) = qbary - M * pbary;
+
+    res.FromEigenMatrix(T);
 }
 
 } // end namespace

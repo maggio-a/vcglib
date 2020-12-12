@@ -241,7 +241,7 @@ public:
 	class Param
 	{
 	public:
-		enum MatchModeEnum  {MMSimilarity, MMRigid};
+        enum MatchModeEnum  {MMSimilarity, MMRigid, MMAffine};
 		enum SampleModeEnum {SMRandom, SMNormalEqualized};
 
 		Param()
@@ -738,7 +738,10 @@ in
 				break;
 			case AlignPair::Param::MMRigid:
 				ComputeRigidMatchMatrix(pfix, pmov, newout);
-				break;
+                break;
+            case AlignPair::Param::MMAffine:
+                ComputeAffineMatchMatrix(pfix, pmov, newout);
+                break;
 			default:
 				status = UNKNOWN_MODE;
 				ii.Time = clock();
@@ -790,7 +793,7 @@ in
 			status = TOO_MUCH_SCALE;
 			return false;
 		}
-		if (shv[0] > ap.MaxShear || shv[1] > ap.MaxShear || shv[2] > ap.MaxShear) {
+        if ((ap.MatchMode != Param::MMAffine) && (shv[0] > ap.MaxShear || shv[1] > ap.MaxShear || shv[2] > ap.MaxShear)) {
 			status = TOO_MUCH_SHEAR;
 			return false;
 		}
