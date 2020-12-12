@@ -58,6 +58,7 @@ CoordinateFrame::CoordinateFrame(float s)
 :basecolor(Color4b::White),xcolor(Color4b::Red)
 ,ycolor(Color4b::Green),zcolor(Color4b::Blue),size(s),linewidth(2.0)
 ,font(),drawaxis(true),drawlabels(true),drawvalues(false)
+,xlabel("X"), ylabel("Y"), zlabel("Z")
 {
   font.setFamily("Helvetica");
 }
@@ -130,9 +131,9 @@ void CoordinateFrame::Render(QGLWidget* glw,QPainter* p)
     md.qFont.setPixelSize(12);
     float d=size+scalefactor*linewidth*1.5;
     if (p) {
-      vcg::glLabel::render(p,vcg::Point3f(d,0,0),QString("X"),md);
-      vcg::glLabel::render(p,vcg::Point3f(0,d,0),QString("Y"),md);
-      vcg::glLabel::render(p,vcg::Point3f(0,0,d),QString("Z"),md);
+      vcg::glLabel::render(p,vcg::Point3f(d,0,0),xlabel,md);
+      vcg::glLabel::render(p,vcg::Point3f(0,d,0),ylabel,md);
+      vcg::glLabel::render(p,vcg::Point3f(0,0,d),zlabel,md);
     }
   }
   if(drawvalues){

@@ -113,6 +113,15 @@ public:
   /// The flag that enables ticks values rendering.
   bool drawvalues;
 
+  /// The X axis label
+  QString xlabel;
+
+  /// The Y axis label
+  QString ylabel;
+
+  /// The Z axis label
+  QString zlabel;
+
   // useful functions:
   static void drawTickedLine(const Point3d &, const Point3d &, float, float,float);
   static float calcSlope(const Point3d &, const Point3d &, float, int , double *, double *, GLint *);
